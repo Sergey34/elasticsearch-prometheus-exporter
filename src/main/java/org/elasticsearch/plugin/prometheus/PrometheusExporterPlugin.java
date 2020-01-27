@@ -17,8 +17,6 @@
 
 package org.elasticsearch.plugin.prometheus;
 
-import static java.util.Collections.singletonList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.compuscene.metrics.prometheus.PrometheusSettings;
@@ -40,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static java.util.Collections.singletonList;
+
 /**
  * Prometheus Exporter plugin main class.
  */
@@ -58,13 +58,12 @@ public class PrometheusExporterPlugin extends Plugin implements ActionPlugin {
     }
 
     @Override
-    public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings,
-                                             IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter,
-                                             IndexNameExpressionResolver indexNameExpressionResolver,
-                                             Supplier<DiscoveryNodes> nodesInCluster) {
-        return singletonList(
-                new RestPrometheusMetricsAction(settings, clusterSettings, restController)
-        );
+    public List<RestHandler> getRestHandlers(
+            Settings settings, RestController restController, ClusterSettings clusterSettings,
+            IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter,
+            IndexNameExpressionResolver indexNameExpressionResolver,
+            Supplier<DiscoveryNodes> nodesInCluster) {
+        return singletonList(new RestPrometheusMetricsAction(settings, clusterSettings, restController));
     }
 
     @Override
