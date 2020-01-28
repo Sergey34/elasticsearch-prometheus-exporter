@@ -87,6 +87,7 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-api:${versions.log4j}"
     testCompile "junit:junit:${versions.junit}"
     releaseJars "${project.group}:${project.name}:${project.version}"
+    compile "org.elasticsearch.client:elasticsearch-rest-client:${versions.elasticsearch}"
 }
 
 tasks.withType(JavaCompile) {

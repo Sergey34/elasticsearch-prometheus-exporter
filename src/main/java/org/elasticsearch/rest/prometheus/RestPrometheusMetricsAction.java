@@ -17,8 +17,13 @@
 
 package org.elasticsearch.rest.prometheus;
 
+import org.apache.http.HttpHost;
+import org.apache.http.StatusLine;
 import org.compuscene.metrics.prometheus.PrometheusSettings;
 import org.elasticsearch.action.NodePrometheusMetricsRequest;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.ClusterSettings;
@@ -27,6 +32,7 @@ import org.elasticsearch.rest.BaseRestHandler;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import static org.elasticsearch.action.NodePrometheusMetricsAction.INSTANCE;
@@ -38,12 +44,20 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 public class RestPrometheusMetricsAction extends BaseRestHandler {
 
     private final PrometheusSettings prometheusSettings;
-
+    Integer port;
+    String host;
     @Inject
     public RestPrometheusMetricsAction(Settings settings, ClusterSettings clusterSettings, RestController controller) {
         super(settings);
         this.prometheusSettings = new PrometheusSettings(settings, clusterSettings);
         controller.registerHandler(GET, "/_prometheus/metrics", this);
+
+//        String hostAddress = nodesInCluster.get().getLocalNode().getHostAddress();
+
+        port = settings.getAsInt("http.port", 9200);
+        host = settings.get("network.host", "0.0.0.0");
+
+
     }
 
     @Override
@@ -58,6 +72,17 @@ public class RestPrometheusMetricsAction extends BaseRestHandler {
         if (logger.isTraceEnabled()) {
             logger.trace(String.format(Locale.ENGLISH, "Received request for Prometheus metrics from %s",
                     request.getRemoteAddress().toString()));
+        }
+
+        RestClient restClient = RestClient.builder(new HttpHost(host, port, "http")).build();
+        Request request2 = new Request("POST", "/seko/_search");
+        request2.setJsonEntity("{\"aggs\":{\"2\":{\"terms\":{\"field\":\"qwe\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}},\"size\":0}");
+        try {
+            Response response = restClient.performRequest(request2);
+            StatusLine statusLine = response.getStatusLine();
+            logger.warn("12312 {}",statusLine);
+        } catch (IOException e) {
+            logger.warn("err ", e);
         }
 
         NodePrometheusMetricsRequest metricsRequest = new NodePrometheusMetricsRequest();
