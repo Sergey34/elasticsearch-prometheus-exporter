@@ -15,7 +15,7 @@
  *
  */
 
-package org.elasticsearch.rest.prometheus;
+package org.elasticsearch.rest.prometheus.metrics;
 
 import org.compuscene.metrics.prometheus.PrometheusSettings;
 import org.elasticsearch.action.NodePrometheusMetricsRequest;

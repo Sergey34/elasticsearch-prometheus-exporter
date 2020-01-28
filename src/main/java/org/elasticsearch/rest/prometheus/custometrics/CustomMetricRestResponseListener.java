@@ -15,7 +15,7 @@
  *
  */
 
-package org.elasticsearch.rest.prometheus;
+package org.elasticsearch.rest.prometheus.custometrics;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +29,12 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.RestResponseListener;
 
-public class MetricRestResponseListener extends RestResponseListener<NodePrometheusMetricsResponse> {
+public class CustomMetricRestResponseListener extends RestResponseListener<NodePrometheusMetricsResponse> {
     private final Logger logger;
 
     private PrometheusSettings prometheusSettings;
 
-    MetricRestResponseListener(RestChannel channel, PrometheusSettings prometheusSettings) {
+    CustomMetricRestResponseListener(RestChannel channel, PrometheusSettings prometheusSettings) {
         super(channel);
         this.logger = LogManager.getLogger(getClass());
         this.prometheusSettings = prometheusSettings;

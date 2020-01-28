@@ -31,7 +31,8 @@ import org.elasticsearch.plugins.ActionPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestHandler;
-import org.elasticsearch.rest.prometheus.RestPrometheusMetricsAction;
+import org.elasticsearch.rest.prometheus.custometrics.RestPrometheusCustomMetricsAction;
+import org.elasticsearch.rest.prometheus.metrics.RestPrometheusMetricsAction;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,7 +64,13 @@ public class PrometheusExporterPlugin extends Plugin implements ActionPlugin {
             IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter,
             IndexNameExpressionResolver indexNameExpressionResolver,
             Supplier<DiscoveryNodes> nodesInCluster) {
-        return singletonList(new RestPrometheusMetricsAction(settings, clusterSettings, restController));
+
+        /*String localNode = nodesInCluster.get().getLocalNode().getHostAddress();
+        logger.error("@@@@@@@33 {}", localNode);*/
+        return Arrays.asList(
+                new RestPrometheusMetricsAction(settings, clusterSettings, restController),
+                new RestPrometheusCustomMetricsAction(settings, clusterSettings, restController)
+        );
     }
 
     @Override
