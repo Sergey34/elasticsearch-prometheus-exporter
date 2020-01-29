@@ -80,10 +80,10 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
                 .map(PrometheusCustomMetricsAction::new)
                 .filter(PrometheusCustomMetricsAction::isEnabled)
                 .forEach(it -> {
-                    
+
                 });
 
-        Request request2 = new Request("POST", "/seko/_search");
+      /*  Request request2 = new Request("POST", "/seko/_search");
         request2.setJsonEntity("{\"aggs\":{\"2\":{\"terms\":{\"field\":\"qwe\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}},\"size\":0}");
         try {
             Response response = restClient.performRequest(request2);
@@ -92,9 +92,9 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
         } catch (IOException e) {
             logger.warn("err ", e);
         }
-
+*/
         NodePrometheusMetricsRequest metricsRequest = new NodePrometheusMetricsRequest();
         return channel
-                -> client.execute(INSTANCE, metricsRequest, new CustomMetricRestResponseListener(channel, prometheusSettings));
+                -> client.execute(INSTANCE, metricsRequest, new CustomMetricRestResponseListener(channel, prometheusSettings, Arrays.asList()));
     }
 }

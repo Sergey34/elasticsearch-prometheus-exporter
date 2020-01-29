@@ -20,11 +20,14 @@ package org.elasticsearch.rest.prometheus.custom;
 import java.util.Map;
 
 public class PrometheusCustomMetricsAction {
-    private String body;
-    private String config;
-    private boolean enabled;
+    private final String name;
+    private final String body;
+    private final String config;
+    private final boolean enabled;
+    private double metric;
 
     public PrometheusCustomMetricsAction(Map<String, Object> config) {
+        this.name = String.valueOf(config.get("name"));
         this.body = config.get("body").toString();
         this.config = config.get("transformer_config").toString();
         this.enabled = (boolean) config.get("enabled") && this.body != null && this.config != null;
@@ -34,23 +37,23 @@ public class PrometheusCustomMetricsAction {
         return body;
     }
 
-    public void setBody(String body) {
-        this.body = body;
-    }
-
     public String getConfig() {
         return config;
-    }
-
-    public void setConfig(String config) {
-        this.config = config;
     }
 
     public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public String getName() {
+        return name;
+    }
+
+    public double getMetric() {
+        return metric;
+    }
+
+    public void setMetric(double metric) {
+        this.metric = metric;
     }
 }

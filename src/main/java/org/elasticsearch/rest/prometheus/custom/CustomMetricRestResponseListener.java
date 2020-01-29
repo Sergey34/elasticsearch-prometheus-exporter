@@ -29,13 +29,20 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.RestResponseListener;
 
+import java.util.List;
+
 public class CustomMetricRestResponseListener extends RestResponseListener<NodePrometheusMetricsResponse> {
     private final Logger logger;
 
     private PrometheusSettings prometheusSettings;
+    private List<PrometheusCustomMetricsAction> prometheusCustomMetricsActions;
 
-    CustomMetricRestResponseListener(RestChannel channel, PrometheusSettings prometheusSettings) {
+    CustomMetricRestResponseListener(
+            RestChannel channel,
+            PrometheusSettings prometheusSettings,
+            List<PrometheusCustomMetricsAction> prometheusCustomMetricsActions) {
         super(channel);
+        this.prometheusCustomMetricsActions = prometheusCustomMetricsActions;
         this.logger = LogManager.getLogger(getClass());
         this.prometheusSettings = prometheusSettings;
     }
@@ -50,13 +57,11 @@ public class CustomMetricRestResponseListener extends RestResponseListener<NodeP
                     nodeName);
         }
         PrometheusMetricsCatalog catalog = new PrometheusMetricsCatalog(clusterName, nodeName, nodeId, "es_");
-        PrometheusMetricsCollector collector = new PrometheusMetricsCollector(
-                catalog,
-                prometheusSettings.getPrometheusIndices(),
-                prometheusSettings.getPrometheusClusterSettings());
-        collector.registerMetrics();
-        collector.updateMetrics(response.getClusterHealth(), response.getNodeStats(), response.getIndicesStats(),
-                response.getClusterStatsData());
-        return new BytesRestResponse(RestStatus.OK, "xaxaxa");
+
+        // todo register prometheusCustomMetricsActions to catalog
+        // todo setClusterGauge from prometheusCustomMetricsActions
+        catalog.registerClusterGauge("seko","help_seko", "l1", "l2");
+        catalog.setClusterGauge("seko",0.716, "l1","l2");
+        return new BytesRestResponse(RestStatus.OK, catalog.toTextFormat());
     }
 }
