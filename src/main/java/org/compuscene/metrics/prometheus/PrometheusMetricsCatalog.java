@@ -17,6 +17,10 @@
 
 package org.compuscene.metrics.prometheus;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Summary;
+import io.prometheus.client.exporter.common.TextFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.rest.prometheus.RestPrometheusMetricsAction;
@@ -26,11 +30,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Locale;
-
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.Summary;
-import io.prometheus.client.exporter.common.TextFormat;
 
 /**
  * A class that describes a Prometheus metrics catalog.
@@ -98,6 +97,16 @@ public class PrometheusMetricsCatalog {
         return extended;
     }
 
+    public void registerClusterGauge(String metric) {
+        Gauge gauge = Gauge.build().
+                name(metricPrefix + metric)
+                .register(registry);
+
+        metrics.put(metric, gauge);
+
+        logger.debug(String.format(Locale.ENGLISH, "Registered new cluster gauge %s", metric));
+    }
+
     public void registerClusterGauge(String metric, String help, String... labels) {
         Gauge gauge = Gauge.build().
                 name(metricPrefix + metric).
@@ -108,6 +117,11 @@ public class PrometheusMetricsCatalog {
         metrics.put(metric, gauge);
 
         logger.debug(String.format(Locale.ENGLISH, "Registered new cluster gauge %s", metric));
+    }
+
+    public void setClusterGauge(String metric, double value) {
+        Gauge gauge = (Gauge) metrics.get(metric);
+        gauge.set(value);
     }
 
     public void setClusterGauge(String metric, double value, String... labelValues) {

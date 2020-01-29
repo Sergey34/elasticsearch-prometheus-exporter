@@ -17,8 +17,9 @@
 
 package org.elasticsearch.rest.prometheus.custom;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import org.apache.http.HttpHost;
-import org.apache.http.StatusLine;
 import org.compuscene.metrics.prometheus.PrometheusSettings;
 import org.elasticsearch.action.NodePrometheusMetricsRequest;
 import org.elasticsearch.client.Request;
@@ -33,9 +34,14 @@ import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.search.SearchHit;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Locale;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.elasticsearch.action.NodePrometheusMetricsAction.INSTANCE;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
@@ -43,6 +49,7 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 /**
  * REST action class for Prometheus Exporter plugin.
  */
+@SuppressWarnings("unchecked")
 public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
 
     private final PrometheusSettings prometheusSettings;
@@ -72,29 +79,66 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
                     request.getRemoteAddress().toString()));
         }
 
-        Arrays.stream(client.prepareSearch("prometheus_custom_metrics_actions")
+
+        Stream<PrometheusCustomMetrics> prometheusCustomMetrics
+                = Arrays.stream(client.prepareSearch("prometheus_custom_metrics_actions")
                 .setSize(1000)
                 .get()
                 .getHits().getHits())
                 .map(SearchHit::getSourceAsMap)
                 .map(PrometheusCustomMetricsAction::new)
                 .filter(PrometheusCustomMetricsAction::isEnabled)
-                .forEach(it -> {
+                .map(executeMetricRequest())
+                .flatMap(it -> convertToPrometheusMetrics(it).stream());
 
-                });
-
-      /*  Request request2 = new Request("POST", "/seko/_search");
-        request2.setJsonEntity("{\"aggs\":{\"2\":{\"terms\":{\"field\":\"qwe\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}},\"size\":0}");
-        try {
-            Response response = restClient.performRequest(request2);
-            StatusLine statusLine = response.getStatusLine();
-            logger.warn("12312 {}", statusLine);
-        } catch (IOException e) {
-            logger.warn("err ", e);
-        }
-*/
         NodePrometheusMetricsRequest metricsRequest = new NodePrometheusMetricsRequest();
         return channel
-                -> client.execute(INSTANCE, metricsRequest, new CustomMetricRestResponseListener(channel, prometheusSettings, Arrays.asList()));
+                -> client.execute(INSTANCE, metricsRequest, new CustomMetricRestResponseListener(
+                        channel, prometheusCustomMetrics));
+    }
+
+    private List<PrometheusCustomMetrics> convertToPrometheusMetrics(PrometheusCustomMetricsAction it) {
+        try {
+            Map<String, Object> map = new ObjectMapper().readValue(it.getJsonResponse(), Map.class);
+            Map<String, Object> aggregations = (Map<String, Object>) map.get("aggregations");
+            return convertToPrometheusMetrics(aggregations, it.getName());
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
+    }
+
+
+    private List<PrometheusCustomMetrics> convertToPrometheusMetrics(Map<String, Object> resp, String name) throws IOException {
+        List<PrometheusCustomMetrics> prometheusCustomMetrics = new ArrayList<>();
+        Properties properties = new JavaPropsMapper().writeValueAsProperties(resp);
+        properties.forEach((key, value) -> {
+            if (value.toString().matches("-?[0-9]+.?[0-9]*")) {
+                double v = Double.parseDouble(value.toString());
+                prometheusCustomMetrics.add(new PrometheusCustomMetrics(name + "." + key, v));
+            }
+        });
+        return prometheusCustomMetrics;
+    }
+
+    private Function<PrometheusCustomMetricsAction, PrometheusCustomMetricsAction> executeMetricRequest() {
+        return it -> {
+            Request metricRequest = new Request("POST", it.getEndPoint());
+            metricRequest.setJsonEntity(it.getBody());
+            try {
+                Response response = restClient.performRequest(metricRequest);
+                InputStream content = response.getEntity().getContent();
+                InputStreamReader in = new InputStreamReader(content, Charset.defaultCharset());
+                BufferedReader reader = new BufferedReader(in);
+                StringBuilder sb = new StringBuilder();
+                String str;
+                while ((str = reader.readLine()) != null) {
+                    sb.append(str);
+                }
+                it.setJsonResponse(sb.toString());
+            } catch (IOException e) {
+                logger.warn("err ", e);
+            }
+            return it;
+        };
     }
 }

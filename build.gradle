@@ -82,6 +82,11 @@ configurations {
 
 dependencies {
     compile "org.elasticsearch:elasticsearch:${versions.elasticsearch}"
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.11'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.11'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.11'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.8.11'
+
     compile "io.prometheus:simpleclient:${versions.prometheus}"
     compile "io.prometheus:simpleclient_common:${versions.prometheus}"
     compile "org.apache.logging.log4j:log4j-api:${versions.log4j}"

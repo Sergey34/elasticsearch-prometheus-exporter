@@ -20,7 +20,6 @@ package org.elasticsearch.rest.prometheus.custom;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.compuscene.metrics.prometheus.PrometheusMetricsCatalog;
-import org.compuscene.metrics.prometheus.PrometheusMetricsCollector;
 import org.compuscene.metrics.prometheus.PrometheusSettings;
 import org.elasticsearch.action.NodePrometheusMetricsResponse;
 import org.elasticsearch.rest.BytesRestResponse;
@@ -29,22 +28,19 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.RestResponseListener;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 public class CustomMetricRestResponseListener extends RestResponseListener<NodePrometheusMetricsResponse> {
     private final Logger logger;
 
-    private PrometheusSettings prometheusSettings;
-    private List<PrometheusCustomMetricsAction> prometheusCustomMetricsActions;
+    private Stream<PrometheusCustomMetrics> prometheusCustomMetrics;
 
     CustomMetricRestResponseListener(
             RestChannel channel,
-            PrometheusSettings prometheusSettings,
-            List<PrometheusCustomMetricsAction> prometheusCustomMetricsActions) {
+            Stream<PrometheusCustomMetrics> prometheusCustomMetrics) {
         super(channel);
-        this.prometheusCustomMetricsActions = prometheusCustomMetricsActions;
+        this.prometheusCustomMetrics = prometheusCustomMetrics;
         this.logger = LogManager.getLogger(getClass());
-        this.prometheusSettings = prometheusSettings;
     }
 
     @Override
@@ -58,10 +54,11 @@ public class CustomMetricRestResponseListener extends RestResponseListener<NodeP
         }
         PrometheusMetricsCatalog catalog = new PrometheusMetricsCatalog(clusterName, nodeName, nodeId, "es_");
 
-        // todo register prometheusCustomMetricsActions to catalog
-        // todo setClusterGauge from prometheusCustomMetricsActions
-        catalog.registerClusterGauge("seko","help_seko", "l1", "l2");
-        catalog.setClusterGauge("seko",0.716, "l1","l2");
+        prometheusCustomMetrics.forEach(it -> {
+            catalog.registerClusterGauge(it.getName());
+            catalog.setClusterGauge(it.getName(), it.getValue());
+        });
+
         return new BytesRestResponse(RestStatus.OK, catalog.toTextFormat());
     }
 }

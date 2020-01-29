@@ -23,11 +23,13 @@ public class PrometheusCustomMetricsAction {
     private final String name;
     private final String body;
     private final String config;
+    private final String endPoint;
     private final boolean enabled;
-    private double metric;
+    private String jsonResponse;
 
     public PrometheusCustomMetricsAction(Map<String, Object> config) {
         this.name = String.valueOf(config.get("name"));
+        this.endPoint = String.valueOf(config.get("endPoint"));
         this.body = config.get("body").toString();
         this.config = config.get("transformer_config").toString();
         this.enabled = (boolean) config.get("enabled") && this.body != null && this.config != null;
@@ -49,11 +51,17 @@ public class PrometheusCustomMetricsAction {
         return name;
     }
 
-    public double getMetric() {
-        return metric;
+
+
+    public String getEndPoint() {
+        return endPoint;
     }
 
-    public void setMetric(double metric) {
-        this.metric = metric;
+    public String getJsonResponse() {
+        return jsonResponse;
+    }
+
+    public void setJsonResponse(String jsonResponse) {
+        this.jsonResponse = jsonResponse;
     }
 }
