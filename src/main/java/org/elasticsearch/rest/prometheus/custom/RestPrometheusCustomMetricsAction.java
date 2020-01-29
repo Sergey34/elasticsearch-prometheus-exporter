@@ -31,8 +31,10 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.BaseRestHandler;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
 import static org.elasticsearch.action.NodePrometheusMetricsAction.INSTANCE;
@@ -45,6 +47,7 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
 
     private final PrometheusSettings prometheusSettings;
     private final RestClient restClient;
+
     @Inject
     public RestPrometheusCustomMetricsAction(Settings settings, ClusterSettings clusterSettings, RestController controller) {
         super(settings);
@@ -57,7 +60,7 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
 
     @Override
     public String getName() {
-        return "prometheus_metrics_action";
+        return "prometheus_custom_metrics_action";
     }
 
     // This method does not throw any IOException because there are no request parameters to be parsed
@@ -69,12 +72,23 @@ public class RestPrometheusCustomMetricsAction extends BaseRestHandler {
                     request.getRemoteAddress().toString()));
         }
 
+        Arrays.stream(client.prepareSearch("prometheus_custom_metrics_actions")
+                .setSize(1000)
+                .get()
+                .getHits().getHits())
+                .map(SearchHit::getSourceAsMap)
+                .map(PrometheusCustomMetricsAction::new)
+                .filter(PrometheusCustomMetricsAction::isEnabled)
+                .forEach(it -> {
+                    
+                });
+
         Request request2 = new Request("POST", "/seko/_search");
         request2.setJsonEntity("{\"aggs\":{\"2\":{\"terms\":{\"field\":\"qwe\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}},\"size\":0}");
         try {
             Response response = restClient.performRequest(request2);
             StatusLine statusLine = response.getStatusLine();
-            logger.warn("12312 {}",statusLine);
+            logger.warn("12312 {}", statusLine);
         } catch (IOException e) {
             logger.warn("err ", e);
         }

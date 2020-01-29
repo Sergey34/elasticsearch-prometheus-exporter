@@ -57,6 +57,6 @@ public class CustomMetricRestResponseListener extends RestResponseListener<NodeP
         collector.registerMetrics();
         collector.updateMetrics(response.getClusterHealth(), response.getNodeStats(), response.getIndicesStats(),
                 response.getClusterStatsData());
-        return new BytesRestResponse(RestStatus.OK, collector.getCatalog().toTextFormat());
+        return new BytesRestResponse(RestStatus.OK, "xaxaxa");
     }
 }

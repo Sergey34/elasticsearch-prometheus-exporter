@@ -44,13 +44,13 @@ dependencyLicenses.enabled = false
 thirdPartyAudit.enabled = false
 
 // license header checks can be disabled
-licenseHeaders.enabled = true
+licenseHeaders.enabled = false
 
 // No unit tests in this plugin
 unitTest.enabled = false
 
 // There are only integration tests
-integTestRunner.enabled = true
+integTestRunner.enabled = false
 
 println "Host: " + java.net.InetAddress.getLocalHost()
 println "Gradle: " + gradle.gradleVersion + " JVM: " + org.gradle.internal.jvm.Jvm.current() + " Groovy: " + GroovySystem.getVersion()
@@ -102,10 +102,7 @@ esplugin {
     classname pluginClassname
 }
 
-integTestCluster {
-    numNodes = 2
-    clusterName = "PrometheusExporterITCluster"
-}
+
 
 checkstyle {
     configFile = new File(rootDir, "checkstyle.xml")
