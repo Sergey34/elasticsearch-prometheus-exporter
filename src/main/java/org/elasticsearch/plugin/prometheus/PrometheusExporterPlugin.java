@@ -32,9 +32,13 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestHandler;
 import org.elasticsearch.rest.prometheus.RestPrometheusMetricsAction;
+import org.elasticsearch.rest.prometheus.custom.RestPrometheusCustomMetricsAction;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Prometheus Exporter plugin main class.
@@ -48,18 +52,20 @@ public class PrometheusExporterPlugin extends Plugin implements ActionPlugin {
 
     @Override
     public List<ActionHandler<? extends ActionRequest, ? extends ActionResponse>> getActions() {
-        return Arrays.asList(
+        return singletonList(
                 new ActionHandler<>(NodePrometheusMetricsAction.INSTANCE, TransportNodePrometheusMetricsAction.class)
         );
     }
 
     @Override
-    public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings,
-                                             IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter,
-                                             IndexNameExpressionResolver indexNameExpressionResolver,
-                                             Supplier<DiscoveryNodes> nodesInCluster) {
+    public List<RestHandler> getRestHandlers(
+            Settings settings, RestController restController, ClusterSettings clusterSettings,
+            IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter,
+            IndexNameExpressionResolver indexNameExpressionResolver,
+            Supplier<DiscoveryNodes> nodesInCluster) {
         return Arrays.asList(
-                new RestPrometheusMetricsAction(settings, restController)
+                new RestPrometheusMetricsAction(settings, restController),
+                new RestPrometheusCustomMetricsAction(settings, restController)
         );
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright [2016] [Lukas Vlcek]
+ * Copyright [2016] [Vincent VAN HOLLEBEKE]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,6 @@
  */
 
 /**
- * Classes used for testing.
+ * Classes used for Prometheus Exporter plugin REST actions.
  */
-package org.elasticsearch.rest;
+package org.elasticsearch.rest.prometheus.custom;

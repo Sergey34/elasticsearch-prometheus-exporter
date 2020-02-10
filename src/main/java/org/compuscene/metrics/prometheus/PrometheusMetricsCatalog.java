@@ -97,6 +97,16 @@ public class PrometheusMetricsCatalog {
         return extended;
     }
 
+    public void registerClusterGauge(String metric) {
+        Gauge gauge = Gauge.build().
+                name(metricPrefix + metric)
+                .register(registry);
+
+        metrics.put(metric, gauge);
+
+        logger.debug(String.format(Locale.ENGLISH, "Registered new cluster gauge %s", metric));
+    }
+
     public void registerClusterGauge(String metric, String help, String... labels) {
         Gauge gauge = Gauge.build().
                 name(metricPrefix + metric).
@@ -107,6 +117,11 @@ public class PrometheusMetricsCatalog {
         metrics.put(metric, gauge);
 
         logger.debug(String.format(Locale.ENGLISH, "Registered new cluster gauge %s", metric));
+    }
+
+    public void setClusterGauge(String metric, double value) {
+        Gauge gauge = (Gauge) metrics.get(metric);
+        gauge.set(value);
     }
 
     public void setClusterGauge(String metric, double value, String... labelValues) {
